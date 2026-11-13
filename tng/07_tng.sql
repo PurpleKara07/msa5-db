@@ -133,7 +133,7 @@ SELECT
 
 -- 9. 현재 각 직급별 평균연봉 중 60,000,000이상인 직급의 직급명, 평균연봉(정수)를을 평균연봉 내림차순으로 출력해 주세요.
 		  
--- 		SELECT 
+		-- SELECT 
 -- 		       t2.title_code  	AS title_code
 -- 		     , t2.title  			AS title
 -- 		     , CEIL(AVG(t1.salary))	AS avg_salary  
@@ -145,6 +145,7 @@ SELECT
 -- 		          JOIN salaries sal
 --                   ON emp.emp_id = sal.emp_id
 --                  AND emp.fire_at IS NULL
+--                  AND sal.end_at IS NULL 
 -- 		      ) t1  
 -- 		   LEFT JOIN       
 -- 			  (SELECT
@@ -195,31 +196,36 @@ SELECT
 		 ORDER BY titm.title_code;
 			
 -- ------------------------------
--- 전체 평균 급여보다 높은 급여를 받은 기록을 조회
+-- 전체 평균 급여보다 높은 급여를 받는 사원의 사번, 이름, 현재급여를 조회
 	  SELECT 
-	          sal.emp_id
-	       ,  SUM(sal.salary) AS sum_salary
-	 	 FROM salaries sal 
-		WHERE  
-		      CEIL(sal.salary) > (SELECT 		        
-									      CEIL(AVG(dumy.salary)) AS avg_sal	
-						  		        FROM salaries dumy  
+	         emp.emp_id
+	       , emp.`name`  
+	       , sal.salary
+	 	 FROM 
+	 	       employees emp  
+		  JOIN salaries sal 
+		    ON emp.emp_id = sal.emp_id
+			AND emp.fire_at IS NULL
+			AND sal.end_at IS NULL    
+		 WHERE  
+		      CEIL(sal.salary) >= (SELECT 		        
+									      		CEIL(AVG(dumy.salary)) AS avg_sal	
+						  		        	 FROM salaries dumy  
+						  		        	WHERE dumy.end_at IS NULL  
 							     		 )
-		GROUP BY 	
-		      sal.emp_id;     
+		ORDER BY 
+		      sal.salary;
 
 -- 가장 높은 급여를 받은 이력이있는 사원의 사번과 급여를 조회
-		SELECT emp.emp_id
-		     , emp.`name`
+		SELECT 
+		       sal.emp_id
 		     , sal.salary 
-			FROM employees emp
-		 		JOIN salaries sal
-		   		ON emp.emp_id = sal.emp_id
-		   	  AND emp.fire_at IS NULL 
-		  		  AND sal.salary = (SELECT 
-								         		MAX(dumy.salary) AS MAX_sal  
-								    			FROM salaries dumy
-								 		 );					 			
+		  FROM 
+		 		 salaries sal
+		 WHERE sal.salary = (SELECT 
+								          MAX(dumy.salary) AS MAX_sal  
+							        FROM salaries dumy
+								  );					 			
 
 		  
         
